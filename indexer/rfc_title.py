@@ -1,12 +1,14 @@
 import os
 import re
+import sys
+
 
 def parse_header(header_line):
-    pattern = re.compile(r'^(\x0c)?(RFC \d+[a-z]?)( -)?(  +)(.*)(  +)(.*)$')
+    pattern = re.compile(r'^\x0c?(RFC \d+[a-z]?)(?: -\s+)?\s{2,}(.*)\s{2,}(.*)$')
     match = pattern.match(header_line)
 
     if match:
-        return match.group(2), match.group(5).rstrip(), match.group(7)
+        return match.group(1), match.group(2).rstrip(), match.group(3)
 
     return None
 
@@ -34,8 +36,8 @@ def parse_rfc_files(directory_path):
 def extract_header(directory_path, pattern_never_issued, filename):
     with open(os.path.join(directory_path, filename), 'r') as file:
         header_found = False
-        left_margin = float('inf')
-        right_margin = float('inf')
+        left_margin = 0
+        right_margin = 0
         for line in file:
             if line.startswith('\x0c'):  # End of page, break the loop
                 break
@@ -73,5 +75,13 @@ def extract_header(directory_path, pattern_never_issued, filename):
         return header_found
             
 
-# Use the function on a directory
-parse_rfc_files('/Users/jim/Projects/wiki3/ipfs/QmNvTjdqEPjZVWCvRWsFJA1vK7TTw1g9JP6we1WBJTRADM/rfc-data')
+def main():
+    if len(sys.argv) != 2:
+        print("Usage: python your_script.py <directory_path>")
+        sys.exit(1)
+
+    directory_path = sys.argv[1]
+    parse_rfc_files(directory_path)
+
+if __name__ == "__main__":
+    main()
